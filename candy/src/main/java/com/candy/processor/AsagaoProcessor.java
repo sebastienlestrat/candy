@@ -3,6 +3,7 @@ package com.candy.processor;
 import com.candy.model.*;
 import com.candy.repository.CandyBoxRepository;
 import com.candy.repository.ColorRepository;
+import com.candy.repository.CustomerOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -11,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ import static java.lang.Integer.parseInt;
 
     @Autowired
     CandyBoxRepository candyBoxRepository;
+        @Autowired
+        private CustomerOrderRepository customerOrderRepository;
 
      /*
 Les bonbons ASAGAO ne peuvent être commandés que le matin entre 6h et midi.
@@ -41,26 +45,26 @@ La livraison se fait par CandyBox contenant chacune 50 bonbons maximum.
      */
 
     @Override
-    public CandyBox createOrder(Date orderDateTime, int totalQuantity, CandyTag candyTagName){
-        //Convert Date to Instance
-        Instant instant = orderDateTime.toInstant();
-        //Convert Instance to LocalTIme
-        LocalTime currentTime = LocalTime.from(instant.atZone(ZoneId.systemDefault()));
+    public CandyBox createOrder(int totalQuantity, CandyTagEnum candyTagName){
 
-        CandyTagEnum candyTagEnum = candyTagName.getCandyTagName();
-        List<ItemCandyBox> totalCandyItem = getCandyBoxes(currentTime, totalQuantity, candyTagEnum);
+
+        List<ItemCandyBox> totalCandyItem = getCandyBoxes(totalQuantity, candyTagName);
         CandyBox candyBox = new CandyBox();
         candyBox.setTotalCandyBox(totalCandyItem);
+
+        CustomerOrder order = new CustomerOrder();
+        order.setId(1);
+        customerOrderRepository.save(order);
+        candyBox.setCustomerOrder(order);
         candyBoxRepository.save(candyBox);
         return candyBox;
     }
 
-   public List<ItemCandyBox> getCandyBoxes(LocalTime currentTime, int totalQuantity, CandyTagEnum candyTagName) {
-       boolean isCheckTime = checkTime(currentTime);
+   public List<ItemCandyBox> getCandyBoxes(int totalQuantity, CandyTagEnum candyTagName) {
+       boolean isCheckTime = checkTime();
        List<Color> colors = (List<Color>) colorRepository.findAll();
 
        CandyTagEnum isAsagao = CandyTagEnum.ASAGAO;
-       ItemCandyBox itemAsagaoCandyBox = new ItemCandyBox();
 
        List<ItemCandyBox> totalCandybox = new ArrayList<>();
 
@@ -72,8 +76,9 @@ La livraison se fait par CandyBox contenant chacune 50 bonbons maximum.
                    // je récupère une couleur aléatoire de ma liste Color
                    Color randomColor = this.getRandomColor(colors);
                    for(int j = 1; j <=50; j++){
-                   itemAsagaoCandyBox.setQuantity((parseInt(String.valueOf(randomColor))));
-                   totalCandybox.add(itemAsagaoCandyBox);
+                       ItemCandyBox item = new ItemCandyBox();
+                       item.setColor(randomColor);
+                   totalCandybox.add(item);
                    }
                }
        } else {
@@ -89,12 +94,11 @@ La livraison se fait par CandyBox contenant chacune 50 bonbons maximum.
             return colors.get(randomIndex);
     }
 
-    private boolean checkTime(LocalTime currentTime) {
+    private boolean checkTime() {
+        //Convert Instance to LocalTIme
+        LocalDateTime currentTime = LocalDateTime.now();
 
-        LocalTime startTime = LocalTime.of(6, 0); // 6am
-        LocalTime endTime = LocalTime.of(12, 0); // 12pm (noon)
-
-        if (currentTime.isAfter(startTime) && currentTime.isBefore(endTime)) {
+        if (currentTime.getHour() > 6  && currentTime.getHour() < 12) {
             System.out.println("C'est ok le client peut passer la commande");
             return true;
         } else {

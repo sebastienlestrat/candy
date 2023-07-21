@@ -8,9 +8,8 @@ import java.util.Date;
 
 @Data
 public class CustomerOrderDto {
-    private int id;
-    private Date orderDateTime;
+
     private int totalQuantity;
-    private User user;
-    private CandyTag candyTag;
+    private int userId;
+    private CandyTag candyTagName;
 }

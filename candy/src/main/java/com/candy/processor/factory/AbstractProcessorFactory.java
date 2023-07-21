@@ -4,14 +4,17 @@ import com.candy.model.CandyTagEnum;
 import com.candy.processor.AsagaoProcessor;
 import com.candy.processor.ProcessorInterface;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
-public abstract class AbstractProcessorFactory {
+import java.util.Date;
 
+@Component
+public class AbstractProcessorFactory {
 
-    public ProcessorInterface createProcessor(String candyTagName) {
+    public ProcessorInterface createProcessor(CandyTagEnum candyTagName) {
         switch (candyTagName) {
-            case "ASAGAO" -> {
+            case ASAGAO -> {
                 return new AsagaoProcessor();
             }
             default ->
@@ -19,6 +22,5 @@ public abstract class AbstractProcessorFactory {
         }
     }
 
-    protected abstract ProcessorInterface createProcessor();
 
 }
