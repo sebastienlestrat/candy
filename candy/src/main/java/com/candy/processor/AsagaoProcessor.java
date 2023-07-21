@@ -20,7 +20,7 @@ import java.util.Random;
 
 import static java.lang.Integer.parseInt;
 
-@Service
+    @Service
     public class AsagaoProcessor implements ProcessorInterface{
     @Autowired
     ColorRepository colorRepository;
@@ -28,12 +28,7 @@ import static java.lang.Integer.parseInt;
     @Autowired
     CandyBoxRepository candyBoxRepository;
 
-    @Override
-    public void build() {
-        System.out.println("Build AsagaoProcessor");
-    }
-
-    /*
+     /*
 Les bonbons ASAGAO ne peuvent être commandés que le matin entre 6h et midi.
 La couleur de chaque bonbon est définie de façon aléatoire.
 La livraison se fait par CandyBox contenant chacune 50 bonbons maximum.
@@ -45,7 +40,8 @@ La livraison se fait par CandyBox contenant chacune 50 bonbons maximum.
      dès que cette boite à 50 bonbons, on prend une nouvelle boîte
      */
 
-    public CandyBox createAsagao(Date orderDateTime, int totalQuantity, CandyTag candyTagName){
+    @Override
+    public CandyBox createOrder(Date orderDateTime, int totalQuantity, CandyTag candyTagName){
         //Convert Date to Instance
         Instant instant = orderDateTime.toInstant();
         //Convert Instance to LocalTIme
